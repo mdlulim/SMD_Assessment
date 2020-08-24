@@ -24,10 +24,16 @@ class HomeController extends Controller
      */
     public function index()
     {
+        // loading home page with  list of countries 
         $response = Http::get('https://restcountries.eu/rest/v2/all');
         $countries = $response->json();
-        $myborders = array();
-        return view('home', compact('countries', 'myborders'));
+        $data = array();
+        $cborders = array();
+        $selectedCountry =array('name' => '');
+        array_push($data, $countries);
+        array_push($data, $cborders);
+        array_push($data, $selectedCountry);
+        return view('home', ['data' => $data]);
     }
 
       /**
@@ -38,22 +44,29 @@ class HomeController extends Controller
      */
     public function borders(Request $request)
     {
+        // get selected country and return  borders
+        $url = 'https://restcountries.eu/rest/v2/';
         $validatedData = $request->validate(['country' => 'required']);
         $countrycode     = $request->input('country');
-        $response = Http::get('https://restcountries.eu/rest/v2/alpha/'.$countrycode.'');
+        $response = Http::get($url.'alpha/'.$countrycode.'');
         $res = $response->json();
+        $selectedCountry = $res;
         $resultBorders = $res['borders'];
 
         $cborders = array();
         foreach ($resultBorders as $border){
-            $response = Http::get('https://restcountries.eu/rest/v2/alpha/'.$border.'');
+            $response = Http::get($url.'alpha/'.$border.'');
             $country = $response->json();
             array_push($cborders, $country['name']);
         }
-        
-        $resCountry= Http::get('https://restcountries.eu/rest/v2/all');
-        $countries = $resCountry->json();
 
-        return view('home', ['countries' => $countries], ['borders' => $cborders]);
+        $resCountry= Http::get($url.'all');
+        $countries = $resCountry->json();
+        $data = array();
+        array_push($data, $countries);
+        array_push($data, $cborders);
+        array_push($data, $selectedCountry);
+        //var_dump($data[2]);die;
+        return view('home', ['data' => $data]);
     }
 }
