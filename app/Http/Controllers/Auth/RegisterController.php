@@ -38,7 +38,7 @@ class RegisterController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest');
+        //$this->middleware('guest');
     }
 
     /**
@@ -50,11 +50,18 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
+            'name'  => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'phone' => ['required', 'string', 'max:20'],
         ]);
     }
+
+    public function index()
+    {
+        $submiterror = null;
+        return view('/', compact('submiterror'));
+    }
+
 
     /**
      * Create a new user instance after a valid registration.
@@ -64,10 +71,22 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+        $emailExist = User::where('email', '=', $data['email'])->first();
+        if ($emailExist) {
+            $submiterror= array('Student with this email address is already exist',);
+            return view('/',compact('submiterror'));
+        }
+        $results = User::create([
+            'name'          => $data['name'],
+            'email'         => $data['email'],
+            'date_of_birth' => $data['date_of_birth'],
+            'gender'        => $data['gender'],
+            'phone'         => $data['phone'],
+            'car_make'      => $data['car_make'],
+            'car_colour'    => $data['car_colour'],
+            'password'      => Hash::make($data['phone']),
         ]);
+        var_dump($results);die;
+        //return view('/', ['data' => $data]);
     }
 }
